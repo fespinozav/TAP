@@ -5,7 +5,7 @@ nextflow.enable.dsl=2
 download_ch = Channel.fromPath('scripts/download_data.sh')
 
 // Parámetros
-params.data_dir = 'files/genomes'
+params.data_dir = 'data'
 check_script = Channel.fromPath('scripts/check_pyspark.sh')
 
 
@@ -14,7 +14,7 @@ params.results = 'results'
 
 // --------------------------------------------------
 // PROCESO: DOWNLOAD
-// Descarga archivos FASTA a files/genomes
+// Descarga archivos FASTA a data
 // --------------------------------------------------
 
   process DOWNLOAD {
