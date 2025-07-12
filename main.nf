@@ -5,9 +5,7 @@ nextflow.enable.dsl=2
 download_ch = Channel.fromPath('scripts/download_data.sh')
 
 // Parámetros
-//params.genome_dir = params.genome_dir ?: 'files/genomes'
-params.genome_dir = 'files/genomes'
-//fastas_ch = Channel.fromPath("$params.genome_dir/files/genomes/*.fna").ifEmpty { error "No FASTA files found in $params.genome_dir/files/genomes" }
+params.data_dir = 'files/genomes'
 check_script = Channel.fromPath('scripts/check_pyspark.sh')
 
 
@@ -21,18 +19,18 @@ params.results = 'results'
 
   process DOWNLOAD {
     label 'download'
-    publishDir "${params.genome_dir}", mode: 'copy'
+    publishDir "${params.data_dir}", mode: 'copy'
 
     input:
       file download_data
-      val genome_dir
+      val data_dir
 
     output:
-      path "${genome_dir}/*.fna", emit: fastas
+      path "${data_dir}/*.fna", emit: fastas
 
     script:
     """
-    bash ${download_data} ${genome_dir}
+    bash ${download_data} ${data_dir}
     """
   }
 
@@ -216,7 +214,7 @@ process PLOT {
 
 workflow {
   // Ejecutar descarga y usar su salida como canal de FASTA
-  fastas_list = DOWNLOAD(download_ch, params.genome_dir).flatten()
+  fastas_list = DOWNLOAD(download_ch, params.data_dir).flatten()
   fastas      = fastas_list.flatten()
   
   // Describir FASTA

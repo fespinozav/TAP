@@ -1,0 +1,12 @@
+WARNING: Using incubator modules: jdk.incubator.vector
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+25/07/12 18:53:46 WARN Utils: Your hostname, Felipes-MacBook-Pro.local, resolves to a loopback address: 127.0.0.1; using 192.168.1.10 instead (on interface en8)
+25/07/12 18:53:46 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+25/07/12 18:53:47 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+25/07/12 18:53:47 WARN Utils: Service 'SparkUI' could not bind on port 4040. Attempting port 4041.
+25/07/12 18:53:47 WARN Utils: Service 'SparkUI' could not bind on port 4041. Attempting port 4042.
+25/07/12 18:53:47 WARN Utils: Service 'SparkUI' could not bind on port 4042. Attempting port 4043.
+[Stage 0:>                                                          (0 + 1) / 1]                                                                                
