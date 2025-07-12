@@ -7,7 +7,7 @@ download_ch = Channel.fromPath('scripts/download_data.sh')
 // Parámetros
 //params.genome_dir = params.genome_dir ?: 'files/genomes'
 params.genome_dir = 'files/genomes'
-fastas_ch = Channel.fromPath("$params.genome_dir/files/genomes/*.fna").ifEmpty { error "No FASTA files found in $params.genome_dir/files/genomes" }
+//fastas_ch = Channel.fromPath("$params.genome_dir/files/genomes/*.fna").ifEmpty { error "No FASTA files found in $params.genome_dir/files/genomes" }
 check_script = Channel.fromPath('scripts/check_pyspark.sh')
 
 
@@ -21,15 +21,14 @@ params.results = 'results'
 
   process DOWNLOAD {
     label 'download'
-    //publishDir "${params.genome_dir}", mode: 'copy'
+    publishDir "${params.genome_dir}", mode: 'copy'
 
     input:
-      //file genome_dir
       file download_data
       val genome_dir
 
     output:
-      path "${genome_dir}/*.fna", emit: fastas_list
+      path "${genome_dir}/*.fna", emit: fastas
 
     script:
     """
@@ -217,22 +216,16 @@ process PLOT {
 
 workflow {
   // Ejecutar descarga y usar su salida como canal de FASTA
-  fastas_list = DOWNLOAD(download_ch, params.genome_dir)
+  fastas_list = DOWNLOAD(download_ch, params.genome_dir).flatten()
   fastas      = fastas_list.flatten()
-  //fastas_test = fastas.first()
   
   // Describir FASTA
-  //summaries = DESCRIBE_FASTA(fastas_test, describe_ch)
   summaries = DESCRIBE_FASTA(fastas)
-  //regex_out = REGEX_PYSPARK(fastas_test, regex_script)
   regex_out = REGEX_PYSPARK(fastas)
   
   // Verificar PySpark
   check_log = CHECK_PYSPARK(check_script)
 
   // Generar gráficos
-  //summary_ch = summaries.collect()
-  //regex_ch   = regex_out.collect()
-  //plot_files = PLOT(summary_ch, regex_ch)
   PLOT(summaries.collect(), regex_out.collect())
 }
