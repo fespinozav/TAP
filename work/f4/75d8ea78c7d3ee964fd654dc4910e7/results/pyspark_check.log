@@ -1,7 +1,0 @@
-  File "<stdin>", line 4
-    exit 1
-         ^
-SyntaxError: invalid syntax
-Instalando PySpark...
-Requirement already satisfied: pyspark in /Users/felipeespinoza/.pyenv/versions/3.12.5/lib/python3.12/site-packages (4.0.0)
-Requirement already satisfied: py4j==0.10.9.9 in /Users/felipeespinoza/.pyenv/versions/3.12.5/lib/python3.12/site-packages (from pyspark) (0.10.9.9)

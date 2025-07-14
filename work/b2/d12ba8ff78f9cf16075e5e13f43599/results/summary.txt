@@ -1,1 +1,0 @@
-file	num_seq	total_len	gc_percent

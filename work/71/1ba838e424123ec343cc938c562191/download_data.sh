@@ -1,1 +1,0 @@
-/Users/felipeespinoza/Documents/GitHub/TAP/scripts/download_data.sh

@@ -7,8 +7,10 @@ download_ch = Channel.fromPath('scripts/download_data.sh')
 // Parámetros
 params.data_dir = 'data'
 check_script = Channel.fromPath('scripts/check_pyspark.sh')
-
-
+// K-mer pattern parameter (size 2 by default)
+params.kmer = 'GC'
+pattern_ch = Channel.value(params.kmer)
+check_script = Channel.fromPath('scripts/check_pyspark.sh')
 
 params.results = 'results'
 
@@ -17,22 +19,22 @@ params.results = 'results'
 // Descarga archivos FASTA a data
 // --------------------------------------------------
 
-  process DOWNLOAD {
-    label 'download'
-    publishDir "${params.data_dir}", mode: 'copy'
+process DOWNLOAD {
+  label 'download'
+  publishDir "${params.data_dir}", mode: 'copy'
 
-    input:
-      file download_data
-      val data_dir
+  input:
+    file download_data
+    val data_dir
 
-    output:
-      path "${data_dir}/*.fna", emit: fastas
+  output:
+    path "${data_dir}/*.fna", emit: fastas
 
-    script:
-    """
-    bash ${download_data} ${data_dir}
-    """
-  }
+  script:
+  """
+  bash ${download_data} ${data_dir}
+  """
+}
 
 // --------------------------------------------------
 // PROCESO: DESCRIBE_FASTA
@@ -70,7 +72,9 @@ process REGEX_PYSPARK {
   publishDir "${params.results}", mode: 'copy'
 
   input:
-    path fasta_list
+    val kmer
+    val fasta_list
+    file check_done
 
   output:
     path "${params.results}/regex_summary.txt", emit: regex_summary
@@ -78,16 +82,15 @@ process REGEX_PYSPARK {
   script:
   """
   mkdir -p ${params.results}
-  # Write consolidated header
-  echo -e "file_idx\\tmatch_count" > ${params.results}/regex_summary.txt
-
-  # Loop through each FASTA, run regex script, and append (skip header)
-  for f in ${fasta_list}; do
-      python3 "${workflow.projectDir}/scripts/regex_pyspark.py" --input "$f" --output tmp_regex.txt
-      tail -n +2 tmp_regex.txt >> ${params.results}/regex_summary.txt
+  echo -e "file_idx\tmatch_count" > "${params.results}/regex_summary.txt"
+  
+  for f in ${fasta_list.join(' ')}; do
+    python3 "${workflow.projectDir}/scripts/regex_pyspark.py" --pattern "${kmer}" --input "\$f" --output "${params.results}/tmp_regex.txt"
+    tail -n +2 "${params.results}/tmp_regex.txt" >> ${params.results}/regex_summary.txt
   done
   """
 }
+
 
 // --------------------------------------------------
 // PROCESO: CHECK_PYSPARK
@@ -191,18 +194,11 @@ process PLOT {
       plt.tight_layout()
       plt.savefig('${params.results}/plots/gc_content.png')
 
-  # Leer y concatenar regex counts
-  regex_paths = glob.glob('*_regex.txt')
-  rdfs = []
-  for p in regex_paths:
-      rdf = pd.read_csv(p, sep='\\t', header=0)
-      rdf.rename(columns={'file_idx':'filename'}, inplace=True)
-      rdfs.append(rdf)
-  rdf = pd.concat(rdfs, ignore_index=True)
-  # Exit or skip if no regex data
-  if rdf.empty:
-      print("No regex data available, skipping regex plot.")
-      sys.exit(0)
+  # Leer el resumen consolidado de regex
+  regex_path = 'regex_summary.txt'
+  rdf = pd.read_csv(regex_path, sep='\\t', header=0)
+  rdf.rename(columns={'file_idx':'filename'}, inplace=True)
+  
   # Ensure numeric type
   rdf['match_count'] = pd.to_numeric(rdf['match_count'], errors='coerce')
 
@@ -230,10 +226,13 @@ workflow {
   
   // Describir FASTA
   summaries = DESCRIBE_FASTA(fastas.collect())
-  regex_summary = REGEX_PYSPARK(fastas.collect())
-  
+
   // Verificar PySpark
   check_log = CHECK_PYSPARK(check_script)
+  
+  // Ejecutar regex con PySpark
+
+  regex_summary = REGEX_PYSPARK(pattern_ch, fastas.collect(), check_log)
 
   // Generar gráficos
   PLOT(summaries.collect(), regex_summary.collect())

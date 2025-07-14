@@ -1,2 +1,0 @@
-file	num_seq	total_len	gc_pct
-GCA_000007385.1_ASM738v1_genomic.fna	1	 4941439	63.69

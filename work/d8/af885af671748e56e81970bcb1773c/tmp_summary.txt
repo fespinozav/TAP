@@ -1,2 +1,0 @@
-file	num_seq	total_len	gc_pct
-GCA_000014325.1_ASM1432v1_genomic.fna	1	 2095698	41.11
