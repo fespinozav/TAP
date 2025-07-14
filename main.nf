@@ -41,18 +41,23 @@ params.results = 'results'
 
 process DESCRIBE_FASTA {
   label 'describe'
+  publishDir "${params.results}", mode: 'copy'
 
   input:
-    path fasta_file
+    path fasta_list
 
-  
   output:
-    path "${params.results}/${fasta_file.baseName}_summary.txt", emit: summaries
+    path "${params.results}/summary.txt", emit: summaries
 
   script:
   """
   mkdir -p ${params.results}
-  bash "${workflow.projectDir}/scripts/describe_fasta.sh" "${fasta_file}" "${params.results}/${fasta_file.baseName}_summary.txt"
+  echo -e "file\tnum_seq\ttotal_len\tgc_percent" > "${params.results}/summary.txt"
+
+  for f in ${fasta_list}; do
+    bash "${workflow.projectDir}/scripts/describe_fasta.sh" "\$f" "tmp_summary.txt"
+    tail -n +2 "tmp_summary.txt" >> "${params.results}/summary.txt"
+  done
   """
 }
 
@@ -62,19 +67,25 @@ process DESCRIBE_FASTA {
 // --------------------------------------------------
 process REGEX_PYSPARK {
   label 'regex'
+  publishDir "${params.results}", mode: 'copy'
 
   input:
-    path fasta_file
+    path fasta_list
 
   output:
-    path "${params.results}/${fasta_file.baseName}_regex.txt", emit: regex_out
+    path "${params.results}/regex_summary.txt", emit: regex_summary
 
   script:
   """
   mkdir -p ${params.results}
-  python3 "${workflow.projectDir}/scripts/regex_pyspark.py" \
-    --input "${fasta_file}" \
-    --output "${params.results}/${fasta_file.baseName}_regex.txt"
+  # Write consolidated header
+  echo -e "file_idx\\tmatch_count" > ${params.results}/regex_summary.txt
+
+  # Loop through each FASTA, run regex script, and append (skip header)
+  for f in ${fasta_list}; do
+      python3 "${workflow.projectDir}/scripts/regex_pyspark.py" --input "$f" --output tmp_regex.txt
+      tail -n +2 tmp_regex.txt >> ${params.results}/regex_summary.txt
+  done
   """
 }
 
@@ -125,7 +136,7 @@ process PLOT {
   import sys
 
   # Leer y concatenar summaries
-  summary_paths = glob.glob('*_summary.txt')
+  summary_paths = glob.glob('summary.txt')
   dfs = []
   for p in summary_paths:
       df = pd.read_csv(p, sep='\\t', header=0)
@@ -170,9 +181,9 @@ process PLOT {
   plt.savefig('${params.results}/plots/total_length.png')
 
   # GC Content plot
-  if 'gc_pct' in summary_df.columns:
+  if 'gc_percent' in summary_df.columns:
       plt.figure(figsize=(10, 6))
-      ax = summary_df.plot(x='filename', y='gc_pct', kind='bar', legend=False)
+      ax = summary_df.plot(x='filename', y='gc_percent', kind='bar', legend=False)
       ax.set_title('Contenido GC (%)')
       ax.set_xlabel('Archivo')
       ax.set_ylabel('GC (%)')
@@ -218,12 +229,12 @@ workflow {
   fastas      = fastas_list.flatten()
   
   // Describir FASTA
-  summaries = DESCRIBE_FASTA(fastas)
-  regex_out = REGEX_PYSPARK(fastas)
+  summaries = DESCRIBE_FASTA(fastas.collect())
+  regex_summary = REGEX_PYSPARK(fastas.collect())
   
   // Verificar PySpark
   check_log = CHECK_PYSPARK(check_script)
 
   // Generar gráficos
-  PLOT(summaries.collect(), regex_out.collect())
+  PLOT(summaries.collect(), regex_summary.collect())
 }

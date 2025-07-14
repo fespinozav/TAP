@@ -20,6 +20,7 @@ El trabajo consta de tres partes:
 ├── work                                        : carpeta de trabajo
 ├── informe.ipynb                               : Informe del trabajo
 ├── nextflow.config                             : Archivo de configuración
+├── main.nf                                     : Nextflow main
 ├── parser.py                                   : Script de ejemplo
 └── README.md                                   : Descripción general del proyecto
 ```

@@ -1,0 +1,5 @@
+grep: GCA_000014325.1_ASM1432v1_genomic.fna: No such file or directory
+grep: GCA_000014325.1_ASM1432v1_genomic.fna: No such file or directory
+grep: GCA_000014325.1_ASM1432v1_genomic.fna: No such file or directory
+awk: division by zero
+ source line number 1
