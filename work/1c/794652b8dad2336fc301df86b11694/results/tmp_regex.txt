@@ -1,0 +1,2 @@
+file_idx	match_count
+GCA_000014325.1_ASM1432v1_genomic.fna	94515

@@ -1,0 +1,1 @@
+2025-07-14 22:03:53	36.9s	sleepy_mayer	OK	7d84a54aa65c06fdf212e0f825b0c0f2	293a2b65-bcd9-4f83-a09d-32c313606781	nextflow run main.nf -profile local -with-dag flowchart.png
