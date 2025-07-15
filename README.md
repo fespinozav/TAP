@@ -26,12 +26,48 @@ El trabajo consta de tres partes:
 ```
 
 
-## Installation (pendiente)
-```bash
-git clone https://github.com/fespinozav/Chilean-Coin-Detector.git
-python -m venv .venv
+---
+
+## 🚀 Requisitos
+
+- **Nextflow** ≥ 24.06.06  
+- **Java** 11 o 17 (OpenJDK u Oracle)  
+- **Python** 3.12.5  
+- **PySpark** 4.0.0  
+- **Pandas** 2.0.x  
+- **Matplotlib** 3.7.x  
+- **Bash** (macOS o GNU)  
+
+> Para la descarga de FASTA necesita acceso SSH al clúster remoto.  
+
+---
+
+## 🔧 Instalación
+
+1. Clona el repositorio y entra al directorio:
+   ```bash
+   git clone https://github.com/fespinozav/TAP.git
+   cd TAP
+
+2.	Prepara un entorno Python (opcional, recomendado):
+python3 -m venv .venv
 source .venv/bin/activate
-```
-## Launch App
-```bash
-python chilean_coin_detection.py
+pip install pyspark pandas matplotlib
+
+3.	Verifica versiones:
+nextflow -v
+java -version
+pip show pyspark pandas matplotlib
+
+## ⚙️ Configuración
+
+Los parámetros principales están en main.nf:
+	•	params.data_dir (por defecto data)
+	•	params.kmer (dinucleótido a contar, por defecto GC)
+	•	params.results (carpeta de salida, por defecto results)
+
+## 📥 Ejecución
+
+nextflow run main.nf -profile local
+
+
